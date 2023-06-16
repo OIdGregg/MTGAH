@@ -157,6 +157,66 @@ z        # Areas (Battlefield, Graveyard, Exile, Sideboard, Hand, Deck)
     def move_card(self, card, new_area):
         # TODO: Implement card moving
         pass
+    
+class Card:
+    def __init__(self, id, name, type, cost, colors, power, toughness, text):
+        self.id = id  # unique identifier for each card
+        self.name = name
+        self.type = type
+        self.cost = cost  # represented as a dictionary e.g., {'colorless': 1, 'green': 1} for a cost of 1G
+        self.colors = colors  # list of colors e.g., ['green']
+        self.power = power  # relevant for creatures
+        self.toughness = toughness  # relevant for creatures
+        self.text = text  # rules text on the card
+
+    def is_creature(self):
+        return 'creature' in self.type.lower()
+
+    def is_instant_or_sorcery(self):
+        return 'instant' in self.type.lower() or 'sorcery' in self.type.lower()
+
+class Player:
+    def __init__(self, deck):
+        self.life_total = 20
+        self.deck = deck
+        self.hand = []
+        self.battlefield = []
+        self.graveyard = []
+        self.exile = []
+
+    def draw_card(self):
+        if len(self.deck) > 0:
+            self.hand.append(self.deck.pop(0))
+
+    def play_card(self, card):
+        if card in self.hand:
+            self.hand.remove(card)
+            self.battlefield.append(card)
+
+class GameState:
+    def __init__(self, player1, player2):
+        self.players = [player1, player2]
+        self.active_player = 0  # index of the active player in the players list
+
+    def get_active_player(self):
+        return self.players[self.active_player]
+
+    def get_opponent(self):
+        return self.players[1 - self.active_player]
+
+    def next_turn(self):
+        self.active_player = 1 - self.active_player
+        self.get_active_player().draw_card()
+
+    def play_card_from_hand(self, player, card):
+        if card.cost <= player.mana_pool and card in player.hand:
+            player.play_card(card)
+            if card.is_creature():
+                player.battlefield.append(card)
+            elif card.is_instant_or_sorcery():
+                # TODO: Implement effects of instants and sorceries
+                pass
+            player.mana_pool -= card.cost
 
 # Create the application
 app = QApplication(sys.argv)
